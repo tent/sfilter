@@ -1,19 +1,13 @@
 package sfilter_test
 
 import (
+	"reflect"
 	"testing"
 
 	"git.cupcake.io/picard/sfilter"
-	. "launchpad.net/gocheck"
 )
 
 // Hook up gocheck into the gotest runner.
-func Test(t *testing.T) { TestingT(t) }
-
-type TestSuite struct{}
-
-var _ = Suite(&TestSuite{})
-
 type NestedExample struct {
 	A string `sfilter:"one,two"`
 	B string `sfilter:"two"`
@@ -86,14 +80,43 @@ var mapTests = []struct {
 	}},
 }
 
-func (s *TestSuite) TestMap(c *C) {
-	for _, t := range mapTests {
-
-		actual, err := sfilter.Map(example, t.tags...)
+func TestMap(t *testing.T) {
+	for i, test := range mapTests {
+		actual, err := sfilter.Map(example, test.tags...)
 		if err != nil {
-			c.Log(err)
-			c.Fail()
+			t.Error(err)
 		}
-		c.Assert(actual, DeepEquals, t.expected, Commentf("%s", t.tags))
+		if !reflect.DeepEqual(actual, test.expected) {
+			t.Errorf("got %#v, want %#v, test %d: %#v", actual, test.expected, i, test.tags)
+		}
+	}
+}
+
+type Emptiness struct {
+	Foo string `json:"foo,omitempty" sfilter:"a"`
+	Bar Bar    `json:"bar,omitempty" sfilter:"a"`
+}
+
+type Bar struct {
+	Baz string `json:"baz,omitempty" sfilter:"a"`
+}
+
+var omitemptyTests = []struct {
+	example  Emptiness
+	expected map[string]interface{}
+}{
+	{Emptiness{"", Bar{""}}, map[string]interface{}{}},
+	{Emptiness{"a", Bar{""}}, map[string]interface{}{"foo": "a"}},
+}
+
+func TestOmitEmpty(t *testing.T) {
+	for i, test := range omitemptyTests {
+		actual, err := sfilter.Map(test.example, "a")
+		if err != nil {
+			t.Error(err)
+		}
+		if !reflect.DeepEqual(actual, test.expected) {
+			t.Errorf("got %#v, want %#v, test %d", actual, test.expected, i)
+		}
 	}
 }

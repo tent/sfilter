@@ -6,13 +6,6 @@ import (
 	"strings"
 )
 
-func parseNameTag(tag string) string {
-	if idx := strings.Index(tag, ","); idx != -1 {
-		return tag[:idx]
-	}
-	return tag
-}
-
 func isStructSlice(v reflect.Value) bool {
 	v = reflect.Indirect(v)
 	if v.Kind() == reflect.Slice {
@@ -62,12 +55,15 @@ func Map(v interface{}, tags ...string) (map[string]interface{}, error) {
 			}
 		}
 
-		name := parseNameTag(fieldType.Tag.Get("json"))
+		name, options := parseTag(fieldType.Tag.Get("json"))
 		if name == "" {
 			name = fieldType.Name
 		}
 
 		field = reflect.Indirect(field)
+		if !field.IsValid() || options.Contains("omitempty") && isEmptyValue(field) {
+			continue
+		}
 		var err error
 		if field.Kind() == reflect.Struct {
 			dest[fieldType.Name], err = Map(field.Interface(), tags...)
