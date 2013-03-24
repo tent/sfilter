@@ -18,8 +18,12 @@ func isStructSlice(v reflect.Value) bool {
 	return false
 }
 
+type marshaler interface {
+	MarshalJSON() ([]byte, error)
+}
+
 // Recursively traverse struct v and return a map with values that are tagged
-// not tagged or have a tag matching tags. If v is self-referential, this will
+// with matching tags. If v is self-referential, this will
 // result in an infinite loop.
 func Map(v interface{}, tags ...string) (map[string]interface{}, error) {
 	if len(tags) == 0 {
@@ -38,21 +42,23 @@ func Map(v interface{}, tags ...string) (map[string]interface{}, error) {
 		fieldType := srcType.Field(i)
 		fieldTag := fieldType.Tag.Get("sfilter")
 
-		if fieldTag != "" {
-			fieldTags := strings.Split(fieldTag, ",")
-			keep := false
-		tagloop:
-			for _, t := range tags {
-				for _, ft := range fieldTags {
-					if t == ft {
-						keep = true
-						break tagloop
-					}
+		if fieldTag == "" {
+			continue
+		}
+
+		fieldTags := strings.Split(fieldTag, ",")
+		keep := false
+	tagloop:
+		for _, t := range tags {
+			for _, ft := range fieldTags {
+				if t == ft {
+					keep = true
+					break tagloop
 				}
 			}
-			if !keep {
-				continue
-			}
+		}
+		if !keep {
+			continue
 		}
 
 		name, options := parseTag(fieldType.Tag.Get("json"))
@@ -65,8 +71,10 @@ func Map(v interface{}, tags ...string) (map[string]interface{}, error) {
 			continue
 		}
 		var err error
-		if field.Kind() == reflect.Struct {
-			dest[fieldType.Name], err = Map(field.Interface(), tags...)
+		if _, ok := field.Interface().(marshaler); ok {
+			dest[name] = field.Interface()
+		} else if field.Kind() == reflect.Struct {
+			dest[name], err = Map(field.Interface(), tags...)
 			if err != nil {
 				return nil, err
 			}
