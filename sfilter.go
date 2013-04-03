@@ -66,6 +66,21 @@ func Map(v interface{}, tags ...string) (map[string]interface{}, error) {
 			name = fieldType.Name
 		}
 
+		m, ok := field.Interface().(marshaler)
+		if !ok {
+			// T doesn't match the interface. Check against *T too.
+			if field.Kind() != reflect.Ptr && field.CanAddr() {
+				m, ok = field.Addr().Interface().(marshaler)
+				if ok {
+					field = field.Addr()
+				}
+			}
+		}
+		if ok && (field.Kind() != reflect.Ptr || !field.IsNil()) {
+			dest[name] = m
+			continue
+		}
+
 		field = reflect.Indirect(field)
 		if !field.IsValid() || options.Contains("omitempty") && isEmptyValue(field) {
 			continue
