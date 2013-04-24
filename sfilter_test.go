@@ -14,20 +14,18 @@ type NestedExample struct {
 }
 
 var example = struct {
-	All    string
+	None   string
 	One    string `sfilter:"one"`
 	Two    string `sfilter:"two"`
-	Tagged string `json:"tagged,omitempty"`
+	Tagged string `json:"tagged,omitempty" sfilter:"one,two"`
 
 	NestedOne NestedExample  `sfilter:"one"`
 	NestedTwo *NestedExample `sfilter:"two"`
 
 	SliceOne []NestedExample  `sfilter:"one"`
 	SliceTwo []*NestedExample `sfilter:"two"`
-
-	Other []int
 }{
-	All:    "a",
+	None:   "a",
 	One:    "1",
 	Two:    "2",
 	Tagged: "t",
@@ -37,8 +35,6 @@ var example = struct {
 
 	SliceOne: []NestedExample{{A: "ab", B: "ba"}, {A: "b", B: "a"}},
 	SliceTwo: []*NestedExample{{A: "ab", B: "ba"}, {A: "b", B: "a"}},
-
-	Other: []int{1, 2, 3},
 }
 
 var mapTests = []struct {
@@ -46,27 +42,20 @@ var mapTests = []struct {
 	expected map[string]interface{}
 }{
 	{[]string{"one"}, map[string]interface{}{
-		"All":    "a",
 		"One":    "1",
 		"tagged": "t",
 
 		"NestedOne": map[string]interface{}{"A": "a"},
 		"SliceOne":  []map[string]interface{}{{"A": "ab"}, {"A": "b"}},
-
-		"Other": []int{1, 2, 3},
 	}},
 	{[]string{"two"}, map[string]interface{}{
-		"All":    "a",
 		"Two":    "2",
 		"tagged": "t",
 
 		"NestedTwo": map[string]interface{}{"A": "b", "B": "a"},
 		"SliceTwo":  []map[string]interface{}{{"A": "ab", "B": "ba"}, {"A": "b", "B": "a"}},
-
-		"Other": []int{1, 2, 3},
 	}},
 	{[]string{"one", "two"}, map[string]interface{}{
-		"All":    "a",
 		"One":    "1",
 		"Two":    "2",
 		"tagged": "t",
@@ -75,8 +64,6 @@ var mapTests = []struct {
 		"NestedTwo": map[string]interface{}{"A": "b", "B": "a"},
 		"SliceOne":  []map[string]interface{}{{"A": "ab", "B": "ba"}, {"A": "b", "B": "a"}},
 		"SliceTwo":  []map[string]interface{}{{"A": "ab", "B": "ba"}, {"A": "b", "B": "a"}},
-
-		"Other": []int{1, 2, 3},
 	}},
 }
 
