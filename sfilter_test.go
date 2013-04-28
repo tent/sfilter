@@ -18,6 +18,7 @@ var example = struct {
 	One    string `sfilter:"one"`
 	Two    string `sfilter:"two"`
 	Tagged string `json:"tagged,omitempty" sfilter:"one,two"`
+	Bool   *bool  `json:"bool,omitempty" sfilter:"one,two"`
 
 	NestedOne NestedExample  `sfilter:"one"`
 	NestedTwo *NestedExample `sfilter:"two"`
@@ -29,6 +30,7 @@ var example = struct {
 	One:    "1",
 	Two:    "2",
 	Tagged: "t",
+	Bool:   new(bool),
 
 	NestedOne: NestedExample{A: "a", B: "b"},
 	NestedTwo: &NestedExample{A: "b", B: "a"},
@@ -44,6 +46,7 @@ var mapTests = []struct {
 	{[]string{"one"}, map[string]interface{}{
 		"One":    "1",
 		"tagged": "t",
+		"bool":   false,
 
 		"NestedOne": map[string]interface{}{"A": "a"},
 		"SliceOne":  []map[string]interface{}{{"A": "ab"}, {"A": "b"}},
@@ -51,6 +54,7 @@ var mapTests = []struct {
 	{[]string{"two"}, map[string]interface{}{
 		"Two":    "2",
 		"tagged": "t",
+		"bool":   false,
 
 		"NestedTwo": map[string]interface{}{"A": "b", "B": "a"},
 		"SliceTwo":  []map[string]interface{}{{"A": "ab", "B": "ba"}, {"A": "b", "B": "a"}},
@@ -59,6 +63,7 @@ var mapTests = []struct {
 		"One":    "1",
 		"Two":    "2",
 		"tagged": "t",
+		"bool":   false,
 
 		"NestedOne": map[string]interface{}{"A": "a", "B": "b"},
 		"NestedTwo": map[string]interface{}{"A": "b", "B": "a"},

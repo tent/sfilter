@@ -81,10 +81,10 @@ func Map(v interface{}, tags ...string) (map[string]interface{}, error) {
 			continue
 		}
 
-		field = reflect.Indirect(field)
 		if !field.IsValid() || options.Contains("omitempty") && isEmptyValue(field) {
 			continue
 		}
+		field = reflect.Indirect(field)
 		var err error
 		if _, ok := field.Interface().(marshaler); ok {
 			dest[name] = field.Interface()
