@@ -4,7 +4,7 @@ import (
 	"reflect"
 	"testing"
 
-	"git.cupcake.io/picard/sfilter"
+	"github.com/cupcake/sfilter"
 )
 
 // Hook up gocheck into the gotest runner.
